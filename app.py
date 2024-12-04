@@ -3,7 +3,7 @@ import base64
 from openai import OpenAI
 import os
 # Set OpenAI API key (you should add your actual API key here)
-os.environ["OPENAI_API_KEY"] = "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"
+os.environ["OPENAI_API_KEY"] = "22"
 # Function to encode the image to base64
 def encode_image(image_file):
     return base64.b64encode(image_file.read()).decode('utf-8')
