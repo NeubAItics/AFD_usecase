@@ -6,7 +6,7 @@ from fpdf import FPDF  # For creating PDF
 import unicodedata
 
 # Set OpenAI API key (you should add your actual API key here)
-os.environ["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY", "")
+os.environ["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY","")
 
 # Function to encode the image to base64
 def encode_image(image_file):
