@@ -2,12 +2,24 @@ import streamlit as st
 import base64
 from openai import OpenAI
 import os
+from dotenv import load_dotenv 
 from fpdf import FPDF  # For creating PDF
 import unicodedata
 
-# Set OpenAI API key (you should add your actual API key here)
-os.environ["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY", "")
+# Load environment variables from .env file
+load_dotenv()  # This loads the .env file and sets the environment variables
 
+# Now you can access the API key from the environment
+api_key = os.getenv("OPENAI_API_KEY")
+
+# Check if the key is loaded correctly
+if api_key:
+    print("API key loaded successfully.")
+else:
+    print("API key not found. Please check the .env file.")
+
+# Set OpenAI API key (now we use the loaded environment variable)
+os.environ["OPENAI_API_KEY"] = api_key
 # Function to encode the image to base64
 def encode_image(image_file):
     if image_file is None:
