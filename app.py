@@ -3,13 +3,23 @@ import base64
 from openai import OpenAI
 import os
 from fpdf import FPDF  # For creating PDF
+import unicodedata
 
 # Set OpenAI API key (you should add your actual API key here)
-
 os.environ["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY", "")
+
 # Function to encode the image to base64
 def encode_image(image_file):
     return base64.b64encode(image_file.read()).decode('utf-8')
+
+# Function to clean text for PDF compatibility
+def clean_text_for_pdf(text):
+    """
+    Removes or replaces characters not supported by the Latin-1 encoding
+    used by FPDF.
+    """
+    # Normalize Unicode characters to ASCII equivalents where possible
+    return unicodedata.normalize('NFKD', text).encode('latin-1', 'replace').decode('latin-1')
 
 # Function to create a PDF for downloading
 def create_pdf(content):
@@ -19,6 +29,9 @@ def create_pdf(content):
     pdf.cell(200, 10, txt="Analyzed Results", ln=True, align='C')
     pdf.ln(10)
     pdf.set_font("Arial", size=10)
+    
+    # Clean content for PDF compatibility
+    content = clean_text_for_pdf(content)
     pdf.multi_cell(0, 10, content)
     return pdf
 
@@ -39,8 +52,6 @@ footer {
 """
 st.markdown(page_bg, unsafe_allow_html=True)
 
-import os
-
 # Ensure the correct path to the logo
 logo_path = "big-logo-3.jpg"  # Update to the actual path if needed
 
@@ -59,7 +70,7 @@ else:
     st.error("Logo file not found. Please check the file path.")
 
 # App title with styling
-st.markdown("<h1>📊 Visual Finance Assitant</h1>", unsafe_allow_html=True)
+st.markdown("<h1>📊 Visual Finance Assistant</h1>", unsafe_allow_html=True)
 st.markdown("Upload a balance sheet image and choose an analysis to get meaningful insights.")
 
 # File uploader widget
