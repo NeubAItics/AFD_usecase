@@ -307,7 +307,6 @@ from fpdf import FPDF  # For creating PDF
 os.environ["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY", "")
 
 =======
-os.environ["OPENAI_API_KEY"] = "22"
 >>>>>>> 3786576d0c42f9a85b533155286b82cda1154588
 # Function to encode the image to base64
 def encode_image(image_file):
