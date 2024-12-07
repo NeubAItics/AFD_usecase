@@ -6,10 +6,12 @@ from fpdf import FPDF  # For creating PDF
 import unicodedata
 
 # Set OpenAI API key (you should add your actual API key here)
-os.environ["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY","")
+os.environ["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY", "")
 
 # Function to encode the image to base64
 def encode_image(image_file):
+    if image_file is None:
+        raise ValueError("No image uploaded or the file is invalid")
     return base64.b64encode(image_file.read()).decode('utf-8')
 
 # Function to clean text for PDF compatibility
@@ -116,10 +118,10 @@ if st.button("🚀 Analyze"):
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     
     # Create OpenAI request
-    response = client.chat.completions.create(
-        model='gpt-4-turbo',
-        messages=[
-            {
+    try:
+        response = client.chat.completions.create(
+            model='gpt-4-turbo',
+            messages=[{
                 "role": "user",
                 "content": [
                     {"type": "text",
@@ -131,10 +133,12 @@ if st.button("🚀 Analyze"):
                      "image_url": {"url": f"data:image/jpeg;base64,{encode_image(uploaded_file)}"}
                     }
                 ]
-            }
-        ],
-        max_tokens=800  # Limit the response length
-    )
+            }],
+            max_tokens=800  # Limit the response length
+        )
+    except Exception as e:
+        st.error(f"Error in analyzing the image: {str(e)}")
+        st.stop()
     
     # Extract results
     result_content = response.choices[0].message.content
