@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # '''
 # import streamlit as st
 # import base64
@@ -293,6 +294,8 @@
 
 
 ###############################################################################
+=======
+>>>>>>> 3786576d0c42f9a85b533155286b82cda1154588
 import streamlit as st
 import base64
 from openai import OpenAI
@@ -300,8 +303,12 @@ import os
 from fpdf import FPDF  # For creating PDF
 
 # Set OpenAI API key (you should add your actual API key here)
+<<<<<<< HEAD
 os.environ["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY", "")
 
+=======
+os.environ["OPENAI_API_KEY"] = "22"
+>>>>>>> 3786576d0c42f9a85b533155286b82cda1154588
 # Function to encode the image to base64
 def encode_image(image_file):
     return base64.b64encode(image_file.read()).decode('utf-8')
