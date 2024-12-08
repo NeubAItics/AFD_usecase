@@ -3,28 +3,23 @@ import base64
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
-import unicodedata
 
-# Load environment variables from .env file
-load_dotenv()  # This loads the .env file and sets the environment variables
+# Load environment variables
+load_dotenv()  # Load variables from the .env file
 
-# Now you can access the API key from the environment
+# Debugging - Print the API key value
 api_key = os.getenv("OPENAI_API_KEY")
-
-# Check if the key is loaded correctly
 if api_key:
-    print("API key loaded successfully.")
+    print("Loaded OpenAI API Key successfully.")
 else:
-    print("API key not found. Please check the .env file.")
+    print("API key not found. Ensure it's added to .env.")
 
-# Set OpenAI API key (now we use the loaded environment variable)
-os.environ["OPENAI_API_KEY"] = api_key
-
-# Function to encode the image to base64
-def encode_image(image_file):
-    if image_file is None:
-        raise ValueError("No image uploaded or the file is invalid")
-    return base64.b64encode(image_file.read()).decode('utf-8')
+# Set OpenAI API key safely
+if api_key:
+    os.environ["OPENAI_API_KEY"] = api_key
+else:
+    st.error("API key not found. Please check the `.env` file.")
+    st.stop()
 
 # Set custom background color for AI-themed appearance
 page_bg = """
@@ -67,18 +62,23 @@ st.markdown("Upload a balance sheet image and choose an analysis to get meaningf
 # File uploader widget
 uploaded_file = st.file_uploader("📁 Upload Image", type=['jpg', 'png', 'jpeg'])
 
+# Display the uploaded image if the user uploads one
+if uploaded_file:
+    st.markdown("### 📄 Uploaded Image:")
+    st.image(uploaded_file, caption="Uploaded Balance Sheet Image", use_container_width=True)
+
 # Analysis options with brief descriptions
 analysis_options = {
     "Debt to Asset Ratio": "Measures the percentage of assets financed by debt.",
     "Current Ratio": "Compares current assets to current liabilities to assess liquidity.",
-    "Quick Ratio": "Examines short-term liquidity excluding inventory.",
-    "Net Profit Margin": "Analyzes how much profit is generated per dollar of revenue.",
-    "Return on Assets (ROA)": "Shows how efficiently assets are used to generate profit.",
-    "Equity Ratio": "Indicates the proportion of assets financed by equity.",
-    "Inventory Turnover": "Measures how often inventory is sold and replaced.",
-    "Working Capital": "Calculates current assets minus current liabilities.",
-    "Operating Cash Flow Ratio": "Shows the ability to cover liabilities with operating cash flow.",
-    "Gross Profit Margin": "Measures the profitability of products sold."
+    "Debt to Equity Ratio": "Measures financial leverage by comparing total liabilities to shareholders' equity.",
+    "Net Profit Margin": "Indicates how much profit a company makes from its total revenue.",
+    "Return on Assets (ROA)": "Measures a company's profitability by comparing net income to total assets.",
+    "Return on Equity (ROE)": "Shows how much profit is generated from shareholders' equity.",
+    "Working Capital Ratio": "Measures a company's operational efficiency by comparing current assets to current liabilities.",
+    "Quick Ratio": "A liquidity ratio that excludes inventory to assess short-term financial health.",
+    "Inventory Turnover Ratio": "Measures how efficiently inventory is being sold and replaced.",
+    "Accounts Receivable Turnover": "Shows how efficiently a company collects revenue from its customers."
 }
 
 # Display options in a selectbox with descriptions
@@ -89,58 +89,48 @@ selected_analysis = st.selectbox(
     format_func=lambda x: f"{x} - {analysis_options[x]}"
 )
 
-# Display uploaded image and details
-if uploaded_file is not None:
-    st.image(uploaded_file, caption="Uploaded Image", use_container_width=True)
-    st.markdown("<p style='color: #DE084FFF;'>Image successfully uploaded!</p>", unsafe_allow_html=True)
+# Input for year selection by user
+st.markdown("<h3>📅 Select the Year for Analysis</h3>", unsafe_allow_html=True)
+selected_year = st.number_input("Enter the year to analyze:", min_value=2000, max_value=2024, value=2023, step=1)
 
-# Button to trigger analysis
+# Analyze on button press
 if st.button("🚀 Analyze"):
-    st.markdown("<h3 style='color: #673AB7;'>Processing...</h3>", unsafe_allow_html=True)
-    progress_bar = st.progress(0)  # Initialize a progress bar
-    
-    # Simulate progress
-    for i in range(1, 101):
-        progress_bar.progress(i)
-    
-    # Initialize OpenAI client
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    
-    # Create OpenAI request
-    try:
-        response = client.chat.completions.create(
-            model='gpt-4-turbo',
-            messages=[{
-                "role": "user",
-                "content": [
-                    {"type": "text",
-                     "text": f"You are a smart financial analyst who can determine calculations. "
-                             f"Using only the image provided, what is the {selected_analysis.lower()}? "
-                             "Explain it in simple terms for someone new to finance."
-                    },
-                    {"type": "image_url",
-                     "image_url": {"url": f"data:image/jpeg;base64,{encode_image(uploaded_file)}"}
+    if not uploaded_file:
+        st.error("Please upload an image before analyzing.")
+    else:
+        st.markdown("<h3 style='color: #673AB7;'>Processing...</h3>", unsafe_allow_html=True)
+        progress_bar = st.progress(0)
+
+        for i in range(1, 101):
+            progress_bar.progress(i)
+
+        # Create OpenAI request safely
+        try:
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            response = client.chat.completions.create(
+                model='gpt-4-turbo',
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"You are a smart financial analyst who can determine calculations. "
+                                        f"Using only the image provided, what is the {selected_analysis.lower()} in {int(selected_year)}? "
+                                        "Explain if this is a good result or not to someone who knows little about finance. "
+                                        "I work at fintech but I'm not an expert in financial documents."
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": f"data:image/jpeg;base64,{base64.b64encode(uploaded_file.getvalue()).decode()}"}
+                            }
+                        ]
                     }
-                ]
-            }],
-            max_tokens=800  # Limit the response length
-        )
-    except Exception as e:
-        st.error(f"Error in analyzing the image: {str(e)}")
-        st.stop()
-    
-    # Extract results
-    result_content = response.choices[0].message.content
-
-    # Display results
-    progress_bar.progress(100)
-    st.success("Analysis Complete!")
-    st.markdown("<h3>📝 Results:</h3>", unsafe_allow_html=True)
-    st.write(result_content)
-
-# Footer
-st.markdown(
-    "<footer style='text-align: center; margin-top: 50px;'>"
-    "Developed with ❤️ by NeubAItics</footer>", 
-    unsafe_allow_html=True
-)
+                ],
+                max_tokens=400
+            )
+            progress_bar.progress(100)
+            st.success("Analysis Complete!")
+            st.write(response.choices[0].message.content)
+        except Exception as e:
+            st.error(f"Error in analysis: {str(e)}")
