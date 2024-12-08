@@ -2,8 +2,7 @@ import streamlit as st
 import base64
 from openai import OpenAI
 import os
-from dotenv import load_dotenv 
-from fpdf import FPDF  # For creating PDF
+from dotenv import load_dotenv
 import unicodedata
 
 # Load environment variables from .env file
@@ -20,34 +19,12 @@ else:
 
 # Set OpenAI API key (now we use the loaded environment variable)
 os.environ["OPENAI_API_KEY"] = api_key
+
 # Function to encode the image to base64
 def encode_image(image_file):
     if image_file is None:
         raise ValueError("No image uploaded or the file is invalid")
     return base64.b64encode(image_file.read()).decode('utf-8')
-
-# Function to clean text for PDF compatibility
-def clean_text_for_pdf(text):
-    """
-    Removes or replaces characters not supported by the Latin-1 encoding
-    used by FPDF.
-    """
-    # Normalize Unicode characters to ASCII equivalents where possible
-    return unicodedata.normalize('NFKD', text).encode('latin-1', 'replace').decode('latin-1')
-
-# Function to create a PDF for downloading
-def create_pdf(content):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt="Analyzed Results", ln=True, align='C')
-    pdf.ln(10)
-    pdf.set_font("Arial", size=10)
-    
-    # Clean content for PDF compatibility
-    content = clean_text_for_pdf(content)
-    pdf.multi_cell(0, 10, content)
-    return pdf
 
 # Set custom background color for AI-themed appearance
 page_bg = """
@@ -160,18 +137,6 @@ if st.button("🚀 Analyze"):
     st.success("Analysis Complete!")
     st.markdown("<h3>📝 Results:</h3>", unsafe_allow_html=True)
     st.write(result_content)
-
-    # Add download button for PDF
-    pdf = create_pdf(result_content)
-    pdf_output = "analyzed_results.pdf"
-    pdf.output(pdf_output)
-    with open(pdf_output, "rb") as pdf_file:
-        st.download_button(
-            label="📥 Download Results as PDF",
-            data=pdf_file,
-            file_name="Analyzed_Results.pdf",
-            mime="application/pdf"
-        )
 
 # Footer
 st.markdown(
