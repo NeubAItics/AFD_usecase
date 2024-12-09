@@ -9,7 +9,7 @@ if not os.getenv("STREAMLIT_ENV"):  # STREAMLIT_ENV can be set to "production" i
     load_dotenv()
 
 # Access the API key from the environment or Streamlit secrets
-api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY")
+api_key = st.secrets["general"]["OPENAI_API_KEY"]
 
 # Set OpenAI API key safely
 if api_key:
