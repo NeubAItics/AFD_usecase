@@ -4,15 +4,12 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()  # Load variables from the .env file
+# Load environment variables from .env only if running locally
+if not os.getenv("STREAMLIT_ENV"):  # STREAMLIT_ENV can be set to "production" in deployed environments
+    load_dotenv()
 
-# Debugging - Print the API key value
-api_key = os.getenv("OPENAI_API_KEY")
-if api_key:
-    print("Loaded OpenAI API Key successfully.")
-else:
-    print("API key not found. Ensure it's added to .env.")
+# Access the API key from the environment or Streamlit secrets
+api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY")
 
 # Set OpenAI API key safely
 if api_key:
