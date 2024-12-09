@@ -1,21 +1,19 @@
 import streamlit as st
 import base64
-from openai import OpenAI
 import os
+from openai import OpenAI
 from dotenv import load_dotenv
 
 # Load environment variables from .env only if running locally
 if not os.getenv("STREAMLIT_ENV"):  # STREAMLIT_ENV can be set to "production" in deployed environments
     load_dotenv()
 
-# Access the API key from the environment or Streamlit secrets
-api_key = st.secrets["general"]["OPENAI_API_KEY"]
+# Access the API key from Streamlit secrets or environment
+api_key = st.secrets.get("general", {}).get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
 
-# Set OpenAI API key safely
-if api_key:
-    os.environ["OPENAI_API_KEY"] = api_key
-else:
-    st.error("API key not found. Please check the `.env` file.")
+# Validate the API key
+if not api_key:
+    st.error("API key not found. Please check your Streamlit secrets or the `.env` file.")
     st.stop()
 
 # Set custom background color for AI-themed appearance
@@ -36,7 +34,7 @@ footer {
 st.markdown(page_bg, unsafe_allow_html=True)
 
 # Ensure the correct path to the logo
-logo_path = r"logo\big-logo-3.jpg"  # Update to the actual path if needed
+logo_path = "logo/big-logo-3.jpg"  # Update to relative path if needed
 
 # Display the logo if the file exists
 if os.path.exists(logo_path):
@@ -50,7 +48,7 @@ if os.path.exists(logo_path):
             unsafe_allow_html=True
         )
 else:
-    st.error("Logo file not found. Please check the file path.")
+    st.error("Logo file not found. Please ensure the correct path.")
 
 # App title with styling
 st.markdown("<h1>📊 Visual Finance Assistant</h1>", unsafe_allow_html=True)
@@ -103,31 +101,21 @@ if st.button("🚀 Analyze"):
 
         # Create OpenAI request safely
         try:
-            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            client = OpenAI(api_key=api_key)
             response = client.chat.completions.create(
                 model='gpt-4-turbo',
                 messages=[
                     {
                         "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": f"You are a smart financial analyst who can determine calculations. "
-                                        f"Using only the image provided, what is the {selected_analysis.lower()} in {int(selected_year)}? "
-                                        "Explain if this is a good result or not to someone who knows little about finance. "
-                                        "I work at fintech but I'm not an expert in financial documents."
-                            },
-                            {
-                                "type": "image_url",
-                                "image_url": {"url": f"data:image/jpeg;base64,{base64.b64encode(uploaded_file.getvalue()).decode()}"}
-                            }
-                        ]
+                        "content": f"You are a smart financial analyst who can determine calculations. "
+                                   f"Using only the image provided, what is the {selected_analysis.lower()} in {int(selected_year)}? "
+                                   "Explain if this is a good result or not to someone who knows little about finance."
                     }
                 ],
                 max_tokens=400
             )
             progress_bar.progress(100)
             st.success("Analysis Complete!")
-            st.write(response.choices[0].message.content)
+            st.write(response.choices[0].message["content"])
         except Exception as e:
             st.error(f"Error in analysis: {str(e)}")
