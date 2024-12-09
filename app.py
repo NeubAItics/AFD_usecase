@@ -36,7 +36,7 @@ footer {
 st.markdown(page_bg, unsafe_allow_html=True)
 
 # Ensure the correct path to the logo
-logo_path = "big-logo-3.jpg"  # Update to the actual path if needed
+logo_path = r"logo\big-logo-3.jpg"  # Update to the actual path if needed
 
 # Display the logo if the file exists
 if os.path.exists(logo_path):
