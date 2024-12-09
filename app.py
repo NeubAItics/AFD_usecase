@@ -116,6 +116,6 @@ if st.button("🚀 Analyze"):
             )
             progress_bar.progress(100)
             st.success("Analysis Complete!")
-            st.write(response.choices[0].message["content"])
+            st.write(response.choices[0].message.content)
         except Exception as e:
             st.error(f"Error in analysis: {str(e)}")
