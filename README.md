@@ -1,6 +1,12 @@
-# **Analyze Financial Documents**
+# **Virtual Finance Assistant**
 
 A Streamlit-based application for analyzing financial documents using OpenAI's GPT API. This app allows users to upload balance sheets or other financial images, process their content, and get insightful analysis.
+
+---
+
+## **Live Demo**
+🚀 Try the application now: [Virtual Finance Assistant App](https://virtual-finance-assistant.streamlit.app/)
+
 
 ---
 
